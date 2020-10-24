@@ -27,9 +27,14 @@ class GameOfLife:
         self.num_of_rows = int(height / cell_size)
         print('columns: %d\nRows: %d' % (self.num_of_columns, self.num_of_rows))
         # set up game grid
-        self.grids = [[[0] * self.num_of_rows] * self.num_of_columns,
-                        [[0] * self.num_of_rows] * self.num_of_columns]
+        self.grids = []
 
+        rows = []
+        for num_of_rows in range(self.num_of_rows):
+            list_of_columns = [0] * self.num_of_columns
+            rows.append(list_of_columns)
+        
+        self.grids.append(rows)
         self.game_grid_active = 0
         self.game_grid_inactive = []
         self.set_grid()
@@ -42,14 +47,14 @@ class GameOfLife:
     # (0) --> all dead
     # ()  --> randomize
     # (None) --> randomize
-        for c in range(self.num_of_columns):
-            for r in range(self.num_of_rows):
+        for r in range(self.num_of_rows):
+            for c in range(self.num_of_columns):
                 if value is None:
-                    cell_value = random.choice([0,1])
+                    cell_value = random.randint(0,1)
                 else:
                     cell_value = value
                 # set to value from 0 -1 
-                self.grids[self.game_grid_active][c][r] = cell_value
+                self.grids[self.game_grid_active][r][c] = cell_value
 
 
     # clear the screen
@@ -62,17 +67,25 @@ class GameOfLife:
         # look at current generation
         # update inactive gride to store next generation
         # change out active grid
-        pass
+        self.set_grid(None)
+        
 
     def draw_grid(self):
+        # clear screen first
+        self.clear_screen()
         # draw circles on grid
         #(surface, color, center(x,y), radius, width)
         # circle = pygame.draw.circle(self.screen, alive_coral, (50,50), 5, 0) 
         for c in range(self.num_of_columns):
             for r in range(self.num_of_rows):
+                # set up colors
+                if self.grids[self.game_grid_active][r][c] == 1:
+                    color = alive_coral
+                else:
+                    color = dead_black
                 #(surface, color, center(x,y), radius, width)
                 pygame.draw.circle(self.screen,
-                                            alive_coral,
+                                            color,
                                             (int(c * cell_size + (cell_size /2)),
                                             int(r * cell_size + (cell_size/2))),
                                             int(cell_size/2),
@@ -95,6 +108,7 @@ class GameOfLife:
             self.handle_events()
             self.update_generation()
             self.draw_grid()
+            # pygame.time.wait(1)
 
         
 
