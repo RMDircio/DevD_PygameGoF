@@ -1,13 +1,17 @@
 
 import sys, pygame
 import random
+from datetime import datetime
 
 # Customizable items
 grid_size = width, height = 800, 600
 cell_size = 10 # radius
+max_fps = 1.0
+
 # cell colors
 dead_black = 0, 0, 0
 alive_coral = 255, 102, 102
+
 
 # Class for whole game
 class GameOfLife:
@@ -19,6 +23,7 @@ class GameOfLife:
         self.screen = pygame.display.set_mode(grid_size)
         self.clear_screen()
         self.init_grids()
+        self.last_update_completed = 0
         # push drawing to memory with flip
         pygame.display.flip()
 
@@ -102,13 +107,23 @@ class GameOfLife:
  
     # game loop
     def run_game(self):
+        desired_milliseconds_between_updates = (1.0 / max_fps) * 1000.0
     
     
         while True:
             self.handle_events()
             self.update_generation()
             self.draw_grid()
-            # pygame.time.wait(1)
+            # Slow down the FrameRate
+            now = pygame.time.get_ticks()
+            milliseconds_since_last_update = now - self.last_update_completed
+
+            time_to_sleep = desired_milliseconds_between_updates - milliseconds_since_last_update
+            if time_to_sleep > 0:
+                pygame.time.delay(int(time_to_sleep))
+            self.last_update_completed = now
+
+
 
         
 
