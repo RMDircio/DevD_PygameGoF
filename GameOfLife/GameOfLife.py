@@ -6,7 +6,7 @@ from datetime import datetime
 # Customizable items
 grid_size = width, height = 800, 600
 cell_size = 10 # radius
-max_fps = 1.0
+max_fps = 5
 
 # cell colors
 dead_black = 0, 0, 0
@@ -22,28 +22,35 @@ class GameOfLife:
         # set up screen window
         self.screen = pygame.display.set_mode(grid_size)
         self.clear_screen()
-        self.init_grids()
-        self.last_update_completed = 0
         # push drawing to memory with flip
         pygame.display.flip()
-
-    def init_grids(self):
+        
+        self.last_update_completed = 0
+        self.desired_milliseconds_between_updates = (1.0 / max_fps) * 1000.0
+        
+        self.game_grid_active = 0
+        self.grids = []
         self.num_of_columns = int(width / cell_size)
         self.num_of_rows = int(height / cell_size)
-        print('columns: %d\nRows: %d' % (self.num_of_columns, self.num_of_rows))
-        # set up game grid
-        self.grids = []
+        self.init_grids()
 
-        rows = []
-        for num_of_rows in range(self.num_of_rows):
-            list_of_columns = [0] * self.num_of_columns
-            rows.append(list_of_columns)
+    def init_grids(self):
         
-        self.grids.append(rows)
-        self.game_grid_active = 0
-        self.game_grid_inactive = []
+        # set up game grid
+
+        def create_grid():
+            rows = []
+            for num_of_rows in range(self.num_of_rows):
+                list_of_columns = [0] * self.num_of_columns
+                rows.append(list_of_columns)
+            return rows
+        
+        self.grids.append(create_grid())
+        self.grids.append(create_grid())
+        
+        
         self.set_grid()
-        print(self.grids[0])
+        
 
     
     def set_grid(self, value=None):
@@ -104,10 +111,18 @@ class GameOfLife:
             # if 'q' key is pressed --> quit game
             if event.type == pygame.QUIT: sys.exit()
 
+    def cap_frame_rate(self):
+        now = pygame.time.get_ticks()
+        milliseconds_since_last_update = now - self.last_update_completed
+
+        time_to_sleep = self.desired_milliseconds_between_updates - milliseconds_since_last_update
+        if time_to_sleep > 0:
+            pygame.time.delay(int(time_to_sleep))
+        self.last_update_completed = now
+
  
     # game loop
     def run_game(self):
-        desired_milliseconds_between_updates = (1.0 / max_fps) * 1000.0
     
     
         while True:
@@ -115,18 +130,8 @@ class GameOfLife:
             self.update_generation()
             self.draw_grid()
             # Slow down the FrameRate
-            now = pygame.time.get_ticks()
-            milliseconds_since_last_update = now - self.last_update_completed
-
-            time_to_sleep = desired_milliseconds_between_updates - milliseconds_since_last_update
-            if time_to_sleep > 0:
-                pygame.time.delay(int(time_to_sleep))
-            self.last_update_completed = now
-
-
-
-        
-
+            self.cap_frame_rate()
+            
 
 
 if __name__ == "__main__":
